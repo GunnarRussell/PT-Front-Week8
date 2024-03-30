@@ -80,10 +80,10 @@ class Menu
             selection = prompt(`
         Choose your character's role from the following options:
 
-        1) Soldier
-        2) Space Wizard
-        3) Criminal
-        4) Clown
+        1) Soldier (high HP, high attack power)
+        2) Space Wizard (low HP, can suck HP from the enemy)
+        3) Criminal (mid HP, has a chance to deal lots of damage)
+        4) Clown (???)
             `
             );
 
@@ -295,7 +295,7 @@ class Menu
 
             ${fighter2.saySomething()}
             -------------------------------
-            ${fighter1.name}: ${fighter1.HP} HP        ${fighter2.name}: ${fighter2.HP} HP
+            ${fighter1.name}: ${Math.max(0,fighter1.HP)} HP        ${fighter2.name}: ${Math.max(0,fighter2.HP)} HP
             `)
 
         while (fighter1.HP > 0 && fighter2.HP > 0 ) //as long as both fighters are still left standing, continue to fight
@@ -305,28 +305,27 @@ class Menu
 
             ${fighter2.attack(fighter1)}
             -------------------------------
-            ${fighter1.name}: ${fighter1.HP} HP        ${fighter2.name}: ${fighter2.HP} HP
+            ${fighter1.name}: ${Math.max(0,fighter1.HP)} HP        ${fighter2.name}: ${Math.max(0,fighter2.HP)} HP
             `)
         }
 
         //calculate who wins
-        if(fighter1.HP > fighter2.HP)
+        if(Math.max(0,fighter1.HP) > Math.max(0,fighter2.HP))
         {
             alert(`${fighter1.name} wins!\n${fighter2.name} has been deleted from the roster.`);
-            this.characterList.find()
+            fighter1.HP = fighter1.maxHP; //the champion rests
         }
-        else if(fighter2.HP > fighter1.HP)
+        else if(Math.max(0,fighter1.HP) < Math.max(0,fighter2.HP))
         {
             alert(`${fighter2.name} wins!\n${fighter1.name} has been deleted from the roster.`);
+            fighter2.HP = fighter2.maxHP; //the champion rests
         }
-        else
+        else if(Math.max(0,fighter1.HP) == Math.max(0,fighter2.HP))
         {
             alert(`Nobody wins! Both fighters have been deleted from the roster! (war is hell)`);
         }
 
-        //heal the combatants
-        fighter1.HP = fighter1.maxHP;
-        fighter2.HP = fighter2.maxHP;
+        this.fighterList.length = [];
         
     }
 
@@ -356,7 +355,7 @@ class Character
         }
         else if(this.species == "Space Elf")
         {
-            return `${this.name} appears to be offended by their opponent's presence.`;
+            return `${this.name} says something rude in space-elvish.`;
         }
         else if(this.species == "Robot")
         {
@@ -419,15 +418,15 @@ class Criminal extends Character
         this.HP = 15;
         this.maxHP = 15;
         this.role = "Criminal";
-        this.ability = "Sneak Attack: Deals 2-5 damage, with a 25% chance to deal 3x damage.";
+        this.ability = "Sneak Attack: Deals 3-6 damage, with a 33% chance to deal 3x damage.";
     }
 
     attack(target)
     {
-        let damage =  this.rollDice(2, 5);
-        let critChance =  this.rollDice(1,4);
+        let damage =  this.rollDice(3, 6);
+        let critChance =  this.rollDice(1,3);
 
-        if(critChance == 4)
+        if(critChance == 1)
         {
             target.HP -= damage * 3;
             return `${this.name} sneaks behind ${target.name} and suprises them with a deadly sneak attack, dealing ${damage * 3} damage!`;
@@ -505,6 +504,7 @@ class Clown extends Character
         {
             target.HP = 0;
             return `${this.name} smiles and snaps their fingers. In a flash of light, ${target.name} is turned into dust!`;
+            target.HP = 0;
         }
         
     }
