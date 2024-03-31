@@ -27,6 +27,61 @@ class Menu
         );
     }
 
+    startMenu() // creates the main menu for user input
+    {
+        let selection = this.showMainMenu();
+        while(selection != 4)
+        {
+            switch(selection)
+            {
+                case '1': // Create New Character
+                    this.createCharacter();
+                    break;
+                case '2': // View Characters
+                    this.showCharacterMenu();
+                    break;
+                case '3': // FIGHT IN THE SPACE WARS
+                    this.spaceWars();
+                    break;
+                case '4': // Exit
+                    break;
+                default: // Invalid choice
+                    alert("Invalid choice. Enter a number between 1 and 4.");
+            }
+            selection = this.showMainMenu();
+        }
+    }
+
+    createCharacter() // ---- add Character Objects to the array
+    {
+        // console.log("1) Create New Character");
+
+        let name = prompt("Enter your character's name:\n\n");
+        let species = this.showSpeciesMenu();
+        let role = this.showRoleMenu();
+
+        if (role == "Soldier")
+        {
+            this.characterList.push(new Soldier(name, species));
+        }
+        else if (role == "Outlaw")
+        {
+            this.characterList.push(new Outlaw(name, species));
+        }
+        else if (role == "Space Wizard")
+        {
+            this.characterList.push(new SpaceWizard(name, species));
+        }
+        else if (role == "Clown")
+        {
+            this.characterList.push(new Clown(name, species));
+        }
+        else
+        {
+            console.log("invalid character");
+        }
+    }
+
     showSpeciesMenu() // shows the species menu
     {
         let species = "";
@@ -111,64 +166,19 @@ class Menu
         return role;
     }
 
-    startMenu() // creates the main menu for user input
-    {
-        let selection = this.showMainMenu();
-        while(selection != 4)
-        {
-            switch(selection)
-            {
-                case '1': // Create New Character
-                    this.createCharacter();
-                    break;
-                case '2': // View Characters
-                    this.showCharacterMenu();
-                    break;
-                case '3': // FIGHT IN THE SPACE WARS
-                    this.spaceWars();
-                    break;
-                case '4': // Exit
-                    break;
-                default: // Invalid choice
-                    alert("Invalid choice. Enter a number between 1 and 4.");
-            }
-            selection = this.showMainMenu();
-        }
-    }
-
-    createCharacter()
-    {
-        // console.log("1) Create New Character");
-
-        let name = prompt("Enter your character's name:\n\n");
-        let species = this.showSpeciesMenu();
-        let role = this.showRoleMenu();
-
-        if (role == "Soldier")
-        {
-            this.characterList.push(new Soldier(name, species));
-        }
-        else if (role == "Outlaw")
-        {
-            this.characterList.push(new Outlaw(name, species));
-        }
-        else if (role == "Space Wizard")
-        {
-            this.characterList.push(new SpaceWizard(name, species));
-        }
-        else if (role == "Clown")
-        {
-            this.characterList.push(new Clown(name, species));
-        }
-        else
-        {
-            console.log("invalid character");
-        }
-    }
-
-    collectCharacters()
+    collectCharacters() // updates the character roster for display
     {
         //determines if any characters have died in the last space wars
+        for(let i = 0; i < this.characterList.length; i++)
+        {
+            if(this.characterList[i].HP < 1)
+            {
+                //and deletes them
+                this.characterList.splice(i,1);
+            }
+        }
+
+        //does it again because this code messes up when both fighters die at the same time
         for(let i = 0; i < this.characterList.length; i++)
         {
             if(this.characterList[i].HP < 1)
@@ -187,7 +197,7 @@ class Menu
         return characters;
     }
 
-    showCharacterMenu()
+    showCharacterMenu() // shows the character list
     {
         let characters = this.collectCharacters();
 
@@ -217,7 +227,7 @@ class Menu
         }
     }
 
-    inspectCharacter(i)
+    inspectCharacter(i) // ---- view or DELETE characters
     {
         let selection = "";
 
@@ -248,7 +258,7 @@ class Menu
         }
     }
 
-    spaceWars()
+    spaceWars() // ---- play the game!
     {
         let characters = this.collectCharacters();
         
@@ -322,7 +332,7 @@ class Menu
         }
         else if(fighter1.HP <= 0 && fighter2.HP <= 0)
         {
-            alert(`Nobody wins! Both fighters have been deleted from the roster!\n(war is hell)`);
+            alert(`Nobody wins! Both fighters have been deleted from the roster!`);
         }
 
         this.fighterList.length = [];
@@ -390,6 +400,8 @@ class Character
 
 }
 
+// subclasses
+
 class Soldier extends Character
 {
     constructor(name, species)
@@ -426,7 +438,7 @@ class Soldier extends Character
     {
         let damage = this.rollDice(3, 5);
         target.HP -= damage;
-        return `${this.name} swings at ${target.name} with their plasma sword, dealing ${damage} damage!`;
+        return `${this.name} swings at ${target.name} with their plasma sword,\n            dealing ${damage} damage!`;
     }
 }
 
@@ -451,7 +463,7 @@ class Outlaw extends Character
         if(critChance == 1)
         {
             target.HP -= damage * 3;
-            return `${this.name} sneaks behind ${target.name} and suprises them with a\n        deadly sneak attack, dealing ${damage * 3} damage!`;
+            return `${this.name} sneaks behind ${target.name} and suprises them with a\n            deadly sneak attack, dealing ${damage * 3} damage!`;
         }
         else
         {
@@ -496,7 +508,7 @@ class SpaceWizard extends Character
         let damage =  this.rollDice(2, 5);
         target.HP -= damage;
         this.HP += damage;
-        return `${this.name} attacks ${target.name} with space magic, dealing ${damage} damage and healing themselves\n        for ${damage} HP!`;
+        return `${this.name} attacks ${target.name} with space magic, dealing ${damage} damage and \n           healing themselves for ${damage} HP!`;
     }
 
     fissionOrb(target)
@@ -505,14 +517,14 @@ class SpaceWizard extends Character
         let damage =  this.rollDice(1, 9);
         target.HP -= damage;
         this.HP -= damage;
-        return `${this.name} summons a miniature sun and throws it at ${target.name},\n        dealing ${damage} damage!\n        ${this.name} is caught in the resulting explosion as well, taking ${Math.ceil(damage/2)} damage!`;
+        return `${this.name} summons a miniature sun and throws it at ${target.name},\n            dealing ${damage} damage!\n            ${this.name} is caught in the resulting explosion as well, taking ${Math.ceil(damage/2)} damage!`;
     }
 
     nebulaAura(target)
     {
         //heals between 2 and 9 damage
         this.HP += 6;
-        return `${this.name} surrounds themselves with a nebula-like aura, healing themselves for 6 HP!`;
+        return `${this.name} surrounds themselves with a nebula-like aura, healing\n            themselves for 6 HP!`;
     }
 }
 
@@ -552,7 +564,7 @@ class Clown extends Character
         if(random == 7)
         {
             target.HP -= 1;
-            return `${this.name} convinces ${target.name} to shake their hand...\n        There was a shocking buzzer hidden in ${this.name}'s hand!\n        ${target.name} takes 1 damage.`;
+            return `${this.name} convinces ${target.name} to shake their hand...\n            There was a shocking buzzer hidden in ${this.name}'s hand!\n            ${target.name} takes 1 damage.`;
         }
         if(random == 8)
         {
@@ -563,7 +575,7 @@ class Clown extends Character
         {
             let damage =  this.rollDice(5, 10);
             target.HP -= damage;
-            return `${this.name} tells a joke! ${target.name} laughs so hard they can't breathe!\n        ${target.name} takes ${damage} damage!`;
+            return `${this.name} tells a joke! ${target.name} laughs so hard they can't breathe!\n            ${target.name} takes ${damage} damage!`;
         }
         if(random == 10)
         {
