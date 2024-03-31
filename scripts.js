@@ -40,7 +40,7 @@ class Menu
 
         1) Human
         2) Reptilian
-        3) Space Elf
+        3) Grey Alien
         4) Robot
             `
             );
@@ -55,7 +55,7 @@ class Menu
                     species = "Reptilian";
                     break;
                 case '3': // Space Elf
-                    species = "Space Elf";
+                    species = "Grey Alien";
                     break;
                 case '4': // Robot
                     species = "Robot";
@@ -81,8 +81,8 @@ class Menu
         Choose your character's role from the following options:
 
         1) Soldier (high HP, high attack power)
-        2) Space Wizard (low HP, can suck HP from the enemy)
-        3) Criminal (mid HP, has a chance to deal lots of damage)
+        2) Space Wizard (can magically drain HP from the enemy)
+        3) Outlaw (has a chance to deal very high damage)
         4) Clown (???)
             `
             );
@@ -96,8 +96,8 @@ class Menu
                 case '2': // Space Wizard
                     role = "Space Wizard";
                     break;
-                case '3': // Criminal
-                    role = "Criminal";
+                case '3': // Outlaw
+                    role = "Outlaw";
                     break;
                 case '4': // Clown
                     role = "Clown";
@@ -148,9 +148,9 @@ class Menu
         {
             this.characterList.push(new Soldier(name, species));
         }
-        else if (role == "Criminal")
+        else if (role == "Outlaw")
         {
-            this.characterList.push(new Criminal(name, species));
+            this.characterList.push(new Outlaw(name, species));
         }
         else if (role == "Space Wizard")
         {
@@ -320,9 +320,9 @@ class Menu
             alert(`${fighter2.name} wins!\n${fighter1.name} has been deleted from the roster.`);
             fighter2.HP = fighter2.maxHP; //the champion rests
         }
-        else if(Math.max(0,fighter1.HP) == Math.max(0,fighter2.HP))
+        else if(fighter1.HP <= 0 && fighter2.HP <= 0)
         {
-            alert(`Nobody wins! Both fighters have been deleted from the roster! (war is hell)`);
+            alert(`Nobody wins! Both fighters have been deleted from the roster!\n(war is hell)`);
         }
 
         this.fighterList.length = [];
@@ -353,9 +353,9 @@ class Character
         {
             return `${this.name} hisses menacingly!`;
         }
-        else if(this.species == "Space Elf")
+        else if(this.species == "Grey Alien")
         {
-            return `${this.name} says something rude in space-elvish.`;
+            return `${this.name} makes a unsettling noise.`;
         }
         else if(this.species == "Robot")
         {
@@ -384,7 +384,8 @@ class Character
         return `${this.name}, the ${this.species} ${this.role}:
         
         HP: ${this.HP}
-        Ability: ${this.ability}`;
+
+        Attacks:\n${this.ability}`;
     }
 
 }
@@ -398,18 +399,38 @@ class Soldier extends Character
         this.HP = 20;
         this.maxHP = 20;
         this.role = "Soldier";
-        this.ability = "Laser Rifle: Deals 4-7 damage.";
+        this.ability = "        Plasma Sword: Deals 3-5 damage.\n        Laser Rifle: Deals 4-7 damage.";
     }
 
     attack(target)
+    {
+        let random = this.rollDice(1, 2);
+        if(random == 1)
+        {
+            return this.laserRifle(target);
+        }
+        if(random == 2)
+        {
+            return this.plasmaSword(target);
+        }
+    }
+
+    laserRifle(target)
     {
         let damage = this.rollDice(4, 7);
         target.HP -= damage;
         return `${this.name} shoots ${target.name} with their laser rifle, dealing ${damage} damage!`;
     }
+
+    plasmaSword(target)
+    {
+        let damage = this.rollDice(3, 5);
+        target.HP -= damage;
+        return `${this.name} swings at ${target.name} with their plasma sword, dealing ${damage} damage!`;
+    }
 }
 
-class Criminal extends Character
+class Outlaw extends Character
 {
     constructor(name, species)
     {
@@ -417,26 +438,26 @@ class Criminal extends Character
 
         this.HP = 15;
         this.maxHP = 15;
-        this.role = "Criminal";
-        this.ability = "Sneak Attack: Deals 3-6 damage, with a 33% chance to deal 3x damage.";
+        this.role = "Outlaw";
+        this.ability = "        Sneak Attack: Deals 3-6 damage, with a 33% chance to\n        deal 3x damage.";
     }
 
     attack(target)
     {
+        //does between 3 and 6 damage, with a 1/3 chance to deal 3x damage
         let damage =  this.rollDice(3, 6);
         let critChance =  this.rollDice(1,3);
 
         if(critChance == 1)
         {
             target.HP -= damage * 3;
-            return `${this.name} sneaks behind ${target.name} and suprises them with a deadly sneak attack, dealing ${damage * 3} damage!`;
+            return `${this.name} sneaks behind ${target.name} and suprises them with a\n        deadly sneak attack, dealing ${damage * 3} damage!`;
         }
         else
         {
             target.HP -= damage;
             return `${this.name} attacks ${target.name} with a knife, dealing ${damage} damage!`;
         }
-        
     }
 }
 
@@ -449,15 +470,49 @@ class SpaceWizard extends Character
         this.HP = 10;
         this.maxHP = 10;
         this.role = "Space Wizard";
-        this.ability = "Space Magic: Deals 2-5 damage, and heals self for an equal amount.";
+        this.ability = "        Space Magic: Deals 2-5 damage, and heals self that equal amount.\n        Fission Orb: Deals 1-9 damage, and self-inflicts half as much.\n        Nebula Aura: Heals self for 6 HP.";
     }
 
     attack(target)
     {
+        let random = this.rollDice(1, 3);
+        if(random == 1)
+        {
+            return this.drain(target);
+        }
+        if(random == 2)
+        {
+            return this.fissionOrb(target);
+        }
+        if(random == 3)
+        {
+            return this.nebulaAura(target);
+        }
+    }
+
+    drain(target)
+    {
+        //deals between 2 and 5 damage, and heals for the same amount
         let damage =  this.rollDice(2, 5);
         target.HP -= damage;
         this.HP += damage;
-        return `${this.name} attacks ${target.name} with space magic, dealing ${damage} damage and healing themself for ${damage} HP!`;
+        return `${this.name} attacks ${target.name} with space magic, dealing ${damage} damage and healing themselves\n        for ${damage} HP!`;
+    }
+
+    fissionOrb(target)
+    {
+        //deals between 1 and 9 damage to everyone
+        let damage =  this.rollDice(1, 9);
+        target.HP -= damage;
+        this.HP -= damage;
+        return `${this.name} summons a miniature sun and throws it at ${target.name},\n        dealing ${damage} damage!\n        ${this.name} is caught in the resulting explosion as well, taking ${Math.ceil(damage/2)} damage!`;
+    }
+
+    nebulaAura(target)
+    {
+        //heals between 2 and 9 damage
+        this.HP += 6;
+        return `${this.name} surrounds themselves with a nebula-like aura, healing themselves for 6 HP!`;
     }
 }
 
@@ -470,24 +525,34 @@ class Clown extends Character
         this.HP = 10;
         this.maxHP = 10;
         this.role = "Clown";
-        this.ability = "Wacky Shenanigans: Mostly useless, but may surprise you.";
+        this.ability = "        Wacky Shenanigans: Mostly useless, but may surprise you.";
     }
 
     attack(target)
     {
+        //random roulette
         let random =  this.rollDice(1, 10);
 
         if(random == 1)
         {
-            return `${this.name} honks their clown nose!`;
+            return `${this.name} honks their nose!`;
         }
-        if(random >= 2 && random <= 4)
+        if(random == 2)
+        {
+            return `${this.name} blows up a balloon!\n            They fold it into the shape of a space dog!`;
+        }
+        if(random == 3 || random == 4)
         {
             return `${this.name} tells a joke! ${target.name} doesn't get it.`;
         }
-        if(random >= 5 && random <= 7)
+        if(random == 5 || random == 6)
         {
             return `${this.name} tells a joke! ${target.name} laughs!`;
+        }
+        if(random == 7)
+        {
+            target.HP -= 1;
+            return `${this.name} convinces ${target.name} to shake their hand...\n        There was a shocking buzzer hidden in ${this.name}'s hand!\n        ${target.name} takes 1 damage.`;
         }
         if(random == 8)
         {
@@ -498,7 +563,7 @@ class Clown extends Character
         {
             let damage =  this.rollDice(5, 10);
             target.HP -= damage;
-            return `${this.name} tells a joke! ${target.name} laughs so hard they can't breathe! ${target.name} takes ${damage} damage!`;
+            return `${this.name} tells a joke! ${target.name} laughs so hard they can't breathe!\n        ${target.name} takes ${damage} damage!`;
         }
         if(random == 10)
         {
@@ -511,5 +576,5 @@ class Clown extends Character
 }
 
 //start the game
-let myMenu = new Menu();
-myMenu.startMenu();
+let spaceWars = new Menu();
+spaceWars.startMenu();
